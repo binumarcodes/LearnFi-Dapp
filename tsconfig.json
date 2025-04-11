@@ -1,0 +1,10 @@
+{
+<<<<<<< HEAD
+  "extends": "@burnt-labs/tsconfig/base.json"
+=======
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true
+  }
+>>>>>>> 1a70a5e1d016e8a2b931a7d9ff6925835608025f
+}

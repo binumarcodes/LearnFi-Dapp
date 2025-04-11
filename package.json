@@ -1,0 +1,84 @@
+{
+<<<<<<< HEAD
+  "name": "@burnt-labs/xion.js",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo run dev --concurrency 13",
+    "lint": "turbo lint",
+    "clean": "turbo clean",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "changeset": "changeset",
+    "prettier-check": "prettier --check \"**/*.{ts,tsx,md}\"",
+    "publish:packages": "changeset publish",
+    "version:packages": "changeset version",
+    "test": "turbo run test"
+  },
+  "packageManager": "pnpm@8.9.0",
+  "dependencies": {
+    "@burnt-labs/tsconfig": "workspace:*",
+    "@changesets/changelog-github": "^0.5.0",
+    "@changesets/cli": "^2.27.1",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^7.0.1",
+    "@mui/material": "^7.0.1",
+    "@rainbow-me/rainbowkit": "^2.2.4",
+    "@reown/appkit": "^1.7.2",
+    "@reown/appkit-adapter-wagmi": "^1.7.2",
+    "@tanstack/react-query": "^5.71.10",
+    "@wagmi/core": "^2.16.7",
+    "eslint": "^8.48.0",
+    "ethers": "^6.13.5",
+    "firebase": "^11.6.0",
+    "prettier": "^3.0.3",
+    "prettier-plugin-tailwindcss": "^0.5.3",
+    "react-dropzone": "^14.3.8",
+    "react-router-dom": "^7.4.1",
+    "recharts": "^2.15.2",
+    "turbo": "^2.0.11",
+    "viem": "^2.25.0",
+    "wagmi": "^2.14.16"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "^18.2.47",
+      "@types/react-dom": "^18.2.18"
+    }
+  }
+=======
+  "name": "skill3",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@metamask/detect-provider": "^2.0.0",
+    "@react-native-async-storage/async-storage": "^2.1.2",
+    "@react-navigation/bottom-tabs": "^7.2.1",
+    "@react-navigation/native": "^7.0.15",
+    "@react-navigation/stack": "^7.1.2",
+    "@walletconnect/client": "^1.8.0",
+    "ethers": "^6.13.5",
+    "expo": "~52.0.38",
+    "expo-av": "^15.0.2",
+    "expo-clipboard": "^7.0.1",
+    "expo-image-picker": "^16.0.6",
+    "expo-status-bar": "~2.0.1",
+    "expo-video": "^2.0.6",
+    "react": "18.3.1",
+    "react-native": "0.76.7"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@types/react": "~18.3.12",
+    "typescript": "^5.3.3"
+  },
+  "private": true
+>>>>>>> 1a70a5e1d016e8a2b931a7d9ff6925835608025f
+}
