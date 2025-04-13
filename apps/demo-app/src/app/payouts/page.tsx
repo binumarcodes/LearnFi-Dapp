@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -9,6 +10,13 @@ import {
   useAbstraxionAccount,
   useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion";
+=======
+import React, { useEffect, useState } from 'react';
+import { Box, Grid, Paper, Typography } from '@mui/material';
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "../../components/util/firebase";
+>>>>>>> 2b1fdb9bc3e2b4879f28c0520d1790c30b7cf470
 
 type MetricCardProps = {
   title: string;
@@ -20,6 +28,7 @@ const MetricCard = ({ title, value, dark = false }: MetricCardProps) => (
   <Paper
     elevation={4}
     sx={{
+<<<<<<< HEAD
       height: "300px",
       width: "300px",
       display: "flex",
@@ -31,11 +40,28 @@ const MetricCard = ({ title, value, dark = false }: MetricCardProps) => (
       color: dark ? "#fff" : "#012b11",
       boxShadow: "0 8px 30px rgba(0,0,0,0.05)",
       textAlign: "center",
+=======
+      height: '300px', // Fixed height of 300px
+      width: '300px',  // Fixed width of 300px
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 4,
+      backgroundColor: dark ? '#000' : '#fff',
+      color: dark ? '#fff' : '#012b11',
+      boxShadow: '0 8px 30px rgba(0,0,0,0.05)',
+      textAlign: 'center',
+>>>>>>> 2b1fdb9bc3e2b4879f28c0520d1790c30b7cf470
     }}
   >
     <Typography
       variant="h6"
+<<<<<<< HEAD
       sx={{ mb: 2, fontWeight: 500, color: dark ? "#ccc" : "#666" }}
+=======
+      sx={{ mb: 2, fontWeight: 500, color: dark ? '#ccc' : '#666' }}
+>>>>>>> 2b1fdb9bc3e2b4879f28c0520d1790c30b7cf470
     >
       {title}
     </Typography>
@@ -45,6 +71,7 @@ const MetricCard = ({ title, value, dark = false }: MetricCardProps) => (
   </Paper>
 );
 
+<<<<<<< HEAD
 function Page() {
   const [videoCount, setVideoCount] = useState(0);
   const [firebaseUid, setFirebaseUid] = useState<string | null>(null);
@@ -54,6 +81,11 @@ function Page() {
   const { client } = useAbstraxionSigningClient();
 
   // 🔹 Firebase: Get video count
+=======
+function page() {
+  const [videoCount, setVideoCount] = useState(0);
+
+>>>>>>> 2b1fdb9bc3e2b4879f28c0520d1790c30b7cf470
   useEffect(() => {
     const fetchVideoCount = async (userId: string) => {
       try {
@@ -68,10 +100,15 @@ function Page() {
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
+<<<<<<< HEAD
         setFirebaseUid(user.uid);
         fetchVideoCount(user.uid);
       } else {
         setFirebaseUid(null);
+=======
+        fetchVideoCount(user.uid);
+      } else {
+>>>>>>> 2b1fdb9bc3e2b4879f28c0520d1790c30b7cf470
         setVideoCount(0);
       }
     });
@@ -79,6 +116,7 @@ function Page() {
     return () => unsubscribe();
   }, []);
 
+<<<<<<< HEAD
   // 🔹 Wallet: Fetch balance once account + client ready
   useEffect(() => {
     const fetchWalletBalance = async () => {
@@ -131,19 +169,37 @@ function Page() {
         justifyContent="center"
         sx={{ width: "100%", maxWidth: "1200px" }}
       >
+=======
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh', // Center the grid vertically
+        px: { xs: 2, md: 5 },
+      }}
+    >
+      <Grid container spacing={4} justifyContent="center" sx={{ width: '100%', maxWidth: '1200px' }}>
+>>>>>>> 2b1fdb9bc3e2b4879f28c0520d1790c30b7cf470
         <Grid item xs={12} sm={4} display="flex" justifyContent="center">
           <MetricCard title="Number of Tutorials" value={videoCount} />
         </Grid>
         <Grid item xs={12} sm={4} display="flex" justifyContent="center">
+<<<<<<< HEAD
           <MetricCard
             title="Wallet Balance"
             value={walletBalance}
             dark
           />
+=======
+          <MetricCard title="Total Earnings (Xion Tokens)" value="Ξ0" dark />
+>>>>>>> 2b1fdb9bc3e2b4879f28c0520d1790c30b7cf470
         </Grid>
         <Grid item xs={12} sm={4} display="flex" justifyContent="center">
           <MetricCard title="Number of Likes" value={videoCount} />
         </Grid>
+<<<<<<< HEAD
         <MetricCard
   title="Wallet Address"
   value={
@@ -189,8 +245,15 @@ function Page() {
 
 
 
+=======
+      </Grid>
+>>>>>>> 2b1fdb9bc3e2b4879f28c0520d1790c30b7cf470
     </Box>
   );
 }
 
+<<<<<<< HEAD
 export default Page;
+=======
+export default page;
+>>>>>>> 2b1fdb9bc3e2b4879f28c0520d1790c30b7cf470
