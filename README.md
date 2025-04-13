@@ -1,6 +1,5 @@
 # xion.js
 
-This is the official xion.js repo.
 
 ## What's inside?
 
