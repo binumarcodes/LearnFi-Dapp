@@ -1,9 +1,9 @@
 # LearnFi Xion.js
 
 ### Start project:
-git clone https://github.com/binumarcodes/LenFi.git
-pnpm install
-npm run dev
+- git clone https://github.com/binumarcodes/LenFi.git
+- pnpm install
+- npm run dev
 
 
 ## What's inside?
