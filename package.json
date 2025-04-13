@@ -1,0 +1,49 @@
+{
+  "name": "@burnt-labs/xion.js",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo run dev --concurrency 13",
+    "lint": "turbo lint",
+    "clean": "turbo clean",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "changeset": "changeset",
+    "prettier-check": "prettier --check \"**/*.{ts,tsx,md}\"",
+    "publish:packages": "changeset publish",
+    "version:packages": "changeset version",
+    "test": "turbo run test"
+  },
+  "packageManager": "pnpm@8.9.0",
+  "dependencies": {
+    "@burnt-labs/tsconfig": "workspace:*",
+    "@changesets/changelog-github": "^0.5.0",
+    "@changesets/cli": "^2.27.1",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^7.0.1",
+    "@mui/material": "^7.0.1",
+    "@rainbow-me/rainbowkit": "^2.2.4",
+    "@reown/appkit": "^1.7.2",
+    "@reown/appkit-adapter-wagmi": "^1.7.2",
+    "@tanstack/react-query": "^5.71.10",
+    "@wagmi/core": "^2.16.7",
+    "eslint": "^8.48.0",
+    "ethers": "^6.13.5",
+    "firebase": "^11.6.0",
+    "prettier": "^3.0.3",
+    "prettier-plugin-tailwindcss": "^0.5.3",
+    "react-dropzone": "^14.3.8",
+    "react-router-dom": "^7.4.1",
+    "recharts": "^2.15.2",
+    "turbo": "^2.0.11",
+    "viem": "^2.25.0",
+    "wagmi": "^2.14.16"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "^18.2.47",
+      "@types/react-dom": "^18.2.18"
+    }
+  }
+}
