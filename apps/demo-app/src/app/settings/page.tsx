@@ -16,7 +16,7 @@ const CustomButton = ({
 }: {
   title: string;
   icon?: React.ReactNode;
-  variant?: string;
+  variant?: 'text' | 'outlined' | 'contained'; // type-safe!
   sx?: object;
 }) => {
   return (
@@ -29,7 +29,7 @@ const CustomButton = ({
         textTransform: 'none',
         color: variant === 'contained' ? '#fff' : '#000',
         backgroundColor: variant === 'contained' ? '#000' : 'transparent',
-        border: variant === 'outline' ? '1px solid #000' : 'none',
+        border: variant === 'outlined' ? '1px solid #000' : 'none',
         ...sx,
       }}
     >
@@ -37,6 +37,7 @@ const CustomButton = ({
     </Button>
   );
 };
+
 
 
 // Profile Page component
@@ -151,23 +152,24 @@ const ProfilePage = () => {
         />
       </Grid>
       <Grid>
-        <CustomButton
-          title="Find Friends"
-          icon={<PersonAdd />}
-          variant="outline"
-          sx={{
-            borderColor: '#000',
-            color: '#000',
-            fontWeight: 600,
-            borderRadius: '4px',
-            padding: '12px 24px',
-            borderWidth: 2,
-            '&:hover': {
-              backgroundColor: '#000',
-              color: '#fff',
-            },
-          }}
-        />
+      <CustomButton
+  title="Find Friends"
+  icon={<PersonAdd />}
+  variant="outlined"
+  sx={{
+    borderColor: '#000',
+    color: '#000',
+    fontWeight: 600,
+    borderRadius: '4px',
+    padding: '12px 24px',
+    borderWidth: 2,
+    '&:hover': {
+      backgroundColor: '#000',
+      color: '#fff',
+    },
+  }}
+/>
+
       </Grid>
     </Grid>
   </Box>

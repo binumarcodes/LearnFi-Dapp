@@ -12,7 +12,7 @@ import {
 
 type MetricCardProps = {
   title: string;
-  value: string | number;
+  value: React.ReactNode; // ✅ Accept React elements
   dark?: boolean;
 };
 
@@ -88,7 +88,7 @@ function Page() {
       }
 
       try {
-        const denom = "uxion"; // If incorrect, try "uxiontest" or check testnet denom
+        const denom = "uxion"; // or "uxiontest" depending on network
         const balance = await client.getBalance(account.bech32Address, denom);
         const xionAmount = Number(balance.amount) / 1_000_000;
         setWalletBalance(`${xionAmount.toFixed(2)} XION`);
@@ -112,7 +112,6 @@ function Page() {
       alert("Address copied!");
     }
   };
-  
 
   return (
     <Box
@@ -120,7 +119,7 @@ function Page() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        flexDirection: 'column',
+        flexDirection: "column",
         height: "100vh",
         px: { xs: 2, md: 5 },
       }}
@@ -135,60 +134,58 @@ function Page() {
           <MetricCard title="Number of Tutorials" value={videoCount} />
         </Grid>
         <Grid display="flex" justifyContent="center">
-          <MetricCard
-            title="Wallet Balance"
-            value={walletBalance}
-            dark
-          />
+          <MetricCard title="Wallet Balance" value={walletBalance} dark />
         </Grid>
         <Grid display="flex" justifyContent="center">
           <MetricCard title="Number of Likes" value={videoCount} />
         </Grid>
-        <MetricCard
-  title="Wallet Address"
-  value={
-    <span onClick={handleCopy} style={{ cursor: "pointer" }}>
-      {shortenAddress(account.bech32Address)}
-    </span>
-  }
-  dark
-/>
-<Grid display="flex" justifyContent="center">
-  <MetricCard title="Network" value="Xion Testnet" />
-</Grid>
+        <Grid display="flex" justifyContent="center">
+          <MetricCard
+            title="Wallet Address"
+            value={
+              <span
+                onClick={handleCopy}
+                style={{
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                }}
+              >
+                {account?.bech32Address
+                  ? shortenAddress(account.bech32Address)
+                  : "Not connected"}
+              </span>
+            }
+            dark
+          />
+        </Grid>
+        <Grid display="flex" justifyContent="center">
+          <MetricCard title="Network" value="Xion Testnet" />
+        </Grid>
+      </Grid>
 
-</Grid>
-<Box
-  mt={6}
-  display="flex"
-  justifyContent="center"
-  alignItems="center"
->
-  <Button
-    variant="primary"
-    size="lg"
-    disabled={!account?.bech32Address || walletBalance === "Loading..."}
-    onClick={() => {
-      alert("Claim functionality coming soon!");
-    }}
-    sx={{
-      px: 4,
-      py: 2,
-      fontSize: "1rem",
-      borderRadius: 3,
-      backgroundColor: "gold",
-      color: "#000",
-      "&:hover": {
-        backgroundColor: "#b8860b",
-      },
-    }}
-  >
-    🚀 Claim Earnings
-  </Button>
-</Box>
-
-
-
+      <Box mt={6} display="flex" justifyContent="center" alignItems="center">
+        <Button
+          variant="contained" // ✅ MUI-compatible variant
+          size="large"        // ✅ MUI-compatible size
+          disabled={!account?.bech32Address || walletBalance === "Loading..."}
+          onClick={() => {
+            alert("Claim functionality coming soon!");
+          }}
+          sx={{
+            px: 4,
+            py: 2,
+            fontSize: "1rem",
+            borderRadius: 3,
+            backgroundColor: "gold",
+            color: "#000",
+            "&:hover": {
+              backgroundColor: "#b8860b",
+            },
+          }}
+        >
+          🚀 Claim Earnings
+        </Button>
+      </Box>
     </Box>
   );
 }

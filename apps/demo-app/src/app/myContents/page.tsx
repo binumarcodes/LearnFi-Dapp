@@ -4,13 +4,22 @@ import {
   Box, Card, Typography, CircularProgress, Grid, Paper, IconButton, Button 
 } from "@mui/material";
 import { VideoCameraFront, CloudOff } from "@mui/icons-material";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { auth, db } from "../../components/util/firebase"
+import { collection, query, where, getDocs, Timestamp } from "firebase/firestore";
+import { auth, db } from "../../components/util/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
+// Define the expected shape of content
+interface ContentData {
+  id: string;
+  title: string;
+  subject: string;
+  language: string;
+  videoUrl: string;
+  createdAt: Timestamp;
+}
 
 const MyContents = () => {
-  const [contents, setContents] = useState<any[]>([]);
+  const [contents, setContents] = useState<ContentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [quizzes, setQuizzes] = useState<{ [key: string]: any[] }>({});
 
@@ -21,9 +30,12 @@ const MyContents = () => {
         const q = query(contentsRef, where("userId", "==", userId));
         const querySnapshot = await getDocs(q);
     
-        const fetchedContents = querySnapshot.docs
-          .map(doc => ({ id: doc.id, ...doc.data() }))
-          .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)); // Sort by newest first
+        const fetchedContents: ContentData[] = querySnapshot.docs
+          .map((doc) => {
+            const data = doc.data() as Omit<ContentData, "id">;
+            return { id: doc.id, ...data };
+          })
+          .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
     
         setContents(fetchedContents);
         fetchQuizzes(fetchedContents);
@@ -35,7 +47,7 @@ const MyContents = () => {
     };
     
 
-    const fetchQuizzes = async (videos: any[]) => {
+    const fetchQuizzes = async (videos: ContentData[]) => {
       const quizzesData: { [key: string]: any[] } = {};
       for (let video of videos) {
         const quizzesRef = collection(db, "quizzes");
@@ -72,10 +84,9 @@ const MyContents = () => {
       ) : contents.length === 0 ? (
         <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="50vh">
           <Card sx={{ p: 4, textAlign: "center", maxWidth: 400, borderRadius: 3 }}>
-          <IconButton sx={{ fontSize: 60, color: '#FFD700' }}>
-            <CloudOff fontSize="inherit" />
-          </IconButton>
-
+            <IconButton sx={{ fontSize: 60, color: '#FFD700' }}>
+              <CloudOff fontSize="inherit" />
+            </IconButton>
             <Typography variant="h6" sx={{ mt: 2 }}>
               No Content Found
             </Typography>
@@ -87,8 +98,7 @@ const MyContents = () => {
       ) : (
         <Grid container spacing={2}>
           {contents.map((content) => (
-            
-            <Grid component="div" key={content.id}>
+            <Grid key={content.id}>
               <Paper elevation={3} sx={{ p: 2, borderRadius: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <VideoCameraFront sx={{ fontSize: 40, color: "gold" }} />
                 <Typography variant="h6" sx={{ mt: 1, textAlign: "center" }}>{content.title}</Typography>
@@ -96,7 +106,7 @@ const MyContents = () => {
                   {content.subject} - {content.language}
                 </Typography>
                 {content.videoUrl && (
-                  <Box mt={1}>
+                  <Box mt={1} width="100%">
                     <video width="100%" controls style={{ borderRadius: 10 }}>
                       <source src={content.videoUrl} type="video/mp4" />
                       Your browser does not support the video tag.

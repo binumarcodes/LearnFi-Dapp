@@ -59,9 +59,12 @@ import {
   
     const { getRootProps, getInputProps } = useDropzone({
       onDrop,
-      accept: "video/*",
+      accept: {
+        'video/*': [],
+      },
       multiple: false,
     });
+    
   
     const handleUpload = async () => {
       if (!video || !title || !subject || !language || !quiz || options.some((opt) => !opt) || !correctAnswer) {
