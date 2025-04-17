@@ -36,7 +36,6 @@
     "react-dropzone": "^14.3.8",
     "react-router-dom": "^7.4.1",
     "recharts": "^2.15.2",
-    "turbo": "^2.0.11",
     "viem": "^2.25.0",
     "wagmi": "^2.14.16"
   },
@@ -45,5 +44,9 @@
       "@types/react": "^18.2.47",
       "@types/react-dom": "^18.2.18"
     }
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0",
+    "workerd": "^1.20250417.0"
   }
 }
