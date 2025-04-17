@@ -74,8 +74,13 @@ useEffect(() => {
         const docRef = doc(db, "tutors", user.uid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setFormData(docSnap.data());
+          setFormData(docSnap.data() as {
+            username: string;
+            name: string;
+            profilePicture: string;
+          });
         }
+        
       }
     };
     fetchUserData();
