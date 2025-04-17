@@ -113,18 +113,18 @@ const Dashboard = () => {
       <List>
         {sections.map(({ label, icon }) => (
           <ListItem
-            button
-            component="div"
-            key={label}
-            onClick={() => setActiveSection(label)}
-            sx={{
-              background: activeSection === label ? "gold" : "transparent",
-              cursor: "pointer",
-            }}
-          >
-            <ListItemIcon>{icon}</ListItemIcon>
-            <ListItemText primary={label} />
-          </ListItem>
+          button
+          key={label}
+          onClick={() => setActiveSection(label)}
+          sx={{
+            background: activeSection === label ? "gold" : "transparent",
+            cursor: "pointer",
+          }}
+        >
+          <ListItemIcon>{icon}</ListItemIcon>
+          <ListItemText primary={label} />
+        </ListItem>
+        
         ))}
       </List>
       <Divider sx={{ my: 2 }} />
