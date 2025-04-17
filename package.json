@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "turbo build",
+    "build": "next build",
     "start": "next start",
-    "dev": "turbo run dev --concurrency 13",
-    "lint": "turbo lint",
+    "dev": "next dev --port 3001",
+    "lint": "next lint",
     "clean": "turbo clean",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "changeset": "changeset",
