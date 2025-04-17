@@ -131,17 +131,17 @@ function Page() {
         justifyContent="center"
         sx={{ width: "100%", maxWidth: "1200px" }}
       >
-        <Grid item xs={12} sm={4} display="flex" justifyContent="center">
+        <Grid display="flex" justifyContent="center">
           <MetricCard title="Number of Tutorials" value={videoCount} />
         </Grid>
-        <Grid item xs={12} sm={4} display="flex" justifyContent="center">
+        <Grid display="flex" justifyContent="center">
           <MetricCard
             title="Wallet Balance"
             value={walletBalance}
             dark
           />
         </Grid>
-        <Grid item xs={12} sm={4} display="flex" justifyContent="center">
+        <Grid display="flex" justifyContent="center">
           <MetricCard title="Number of Likes" value={videoCount} />
         </Grid>
         <MetricCard
@@ -153,7 +153,7 @@ function Page() {
   }
   dark
 />
-<Grid item xs={12} sm={4} display="flex" justifyContent="center">
+<Grid display="flex" justifyContent="center">
   <MetricCard title="Network" value="Xion Testnet" />
 </Grid>
 

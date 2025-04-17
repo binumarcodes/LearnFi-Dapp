@@ -452,7 +452,7 @@ const handleGiftSend = () => {
 
     {/* Gift options */}
     <Grid container spacing={2}>
-      <Grid item xs={6}>
+    <Grid component="div">
         <Box
           sx={{
             p: 2,
@@ -479,7 +479,8 @@ const handleGiftSend = () => {
         </Box>
       </Grid>
 
-      <Grid item xs={6}>
+      <Grid component="div">
+
         <Box
           sx={{
             p: 2,
@@ -506,7 +507,7 @@ const handleGiftSend = () => {
         </Box>
       </Grid>
 
-      <Grid item xs={6}>
+      <Grid component="div">
         <Box
           sx={{
             p: 2,

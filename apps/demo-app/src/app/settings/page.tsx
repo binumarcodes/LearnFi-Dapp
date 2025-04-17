@@ -3,7 +3,6 @@
 
 import React from 'react';
 import { Box, Grid, Paper, Typography, Avatar, Button, IconButton, Card } from '@mui/material';
-import { styled } from '@mui/system';
 import { CloudOff } from '@mui/icons-material';
 import { Edit, PersonAdd } from '@mui/icons-material';
 
@@ -78,7 +77,7 @@ const ProfilePage = () => {
       >
         <Grid container justifyContent="center" alignItems="center" spacing={4}>
           {/* Profile Picture and Details */}
-          <Grid item xs={12} sm={4} sx={{ textAlign: 'center' }}>
+          <Grid sx={{ textAlign: 'center' }}>
   <Avatar
     alt="Profile Avatar"
     src={user.avatar}
@@ -102,11 +101,11 @@ const ProfilePage = () => {
 
 
           {/* Stats + Buttons Combined in One Column */}
-<Grid item xs={12} sm={8}>
+<Grid>
   <Box display="flex" flexDirection="column" alignItems="center" gap={4}>
     {/* Stats */}
     <Grid container justifyContent="space-between" spacing={3}>
-      <Grid item xs={4}>
+      <Grid>
         <Typography variant="h6" sx={{ color: '#000', fontWeight: 600 }}>
           {user.lessons}
         </Typography>
@@ -114,7 +113,7 @@ const ProfilePage = () => {
           Lessons
         </Typography>
       </Grid>
-      <Grid item xs={4}>
+      <Grid>
         <Typography variant="h6" sx={{ color: '#000', fontWeight: 600 }}>
           {user.likes}
         </Typography>
@@ -122,7 +121,7 @@ const ProfilePage = () => {
           Likes
         </Typography>
       </Grid>
-      <Grid item xs={4}>
+      <Grid>
         <Typography variant="h6" sx={{ color: '#000', fontWeight: 600 }}>
           {user.followers}
         </Typography>
@@ -134,7 +133,7 @@ const ProfilePage = () => {
 
     {/* Action Buttons */}
     <Grid container justifyContent="center" spacing={3}>
-      <Grid item xs={12} sm={6}>
+      <Grid>
         <CustomButton
           title="Edit Profile"
           icon={<Edit />}
@@ -151,7 +150,7 @@ const ProfilePage = () => {
           }}
         />
       </Grid>
-      <Grid item xs={12} sm={6}>
+      <Grid>
         <CustomButton
           title="Find Friends"
           icon={<PersonAdd />}
@@ -190,7 +189,7 @@ const ProfilePage = () => {
     { icon: '/xp.svg', label: 'XP Earned', value: user.xp },
     { icon: '/lesson.svg', label: 'Current Streak', value: `${user.streak} days` },
   ].map((item, idx) => (
-    <Grid key={idx} item>
+    <Grid>
       <Paper
         sx={{
           width: 200,

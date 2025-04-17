@@ -108,29 +108,21 @@ const Dashboard = () => {
           marginBottom: 16,
         }}
       />
-      <Typography variant="h6" sx={{ color: "#012b11", fontWeight: 800 }}>
-        {formData.username || "Loading..."}
-      </Typography>
+
       <Divider sx={{ my: 2 }} />
       <List>
         {sections.map(({ label, icon }) => (
-
-          <List>
-            {sections.map(({ label, icon }) => (
-              <ListItemButton
-                key={label}
-                onClick={() => setActiveSection(label)}
-                sx={{
-                  background: activeSection === label ? "gold" : "transparent",
-                  cursor: "pointer",
-                }}
-              >
-                <ListItemIcon>{icon}</ListItemIcon>
-                <ListItemText primary={label} />
-              </ListItemButton>
-            ))}
-          </List>
-          
+          <ListItemButton
+            key={label}
+            onClick={() => setActiveSection(label)}
+            sx={{
+              background: activeSection === label ? "gold" : "transparent",
+              cursor: "pointer",
+            }}
+          >
+            <ListItemIcon>{icon}</ListItemIcon>
+            <ListItemText primary={label} />
+          </ListItemButton>
         ))}
       </List>
       <Divider sx={{ my: 2 }} />
@@ -144,6 +136,7 @@ const Dashboard = () => {
       </StyledButton>
     </Box>
   );
+  
 
   return (
     <Box sx={{ display: "flex", background: "#F3F7F9", minHeight: "100vh" }}>

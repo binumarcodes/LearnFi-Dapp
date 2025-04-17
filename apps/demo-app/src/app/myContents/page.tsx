@@ -8,6 +8,7 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { auth, db } from "../../components/util/firebase"
 import { onAuthStateChanged } from "firebase/auth";
 
+
 const MyContents = () => {
   const [contents, setContents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,7 +87,8 @@ const MyContents = () => {
       ) : (
         <Grid container spacing={2}>
           {contents.map((content) => (
-            <Grid item xs={12} sm={6} md={4} key={content.id}>
+            
+            <Grid component="div" key={content.id}>
               <Paper elevation={3} sx={{ p: 2, borderRadius: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <VideoCameraFront sx={{ fontSize: 40, color: "gold" }} />
                 <Typography variant="h6" sx={{ mt: 1, textAlign: "center" }}>{content.title}</Typography>
@@ -101,20 +103,7 @@ const MyContents = () => {
                     </video>
                   </Box>
                 )}
-                {/* <Box mt={2}>
-                  <Typography variant="subtitle1">Quiz</Typography>
-                  {quizzes[content.id] && quizzes[content.id].length > 0 ? (
-                    quizzes[content.id].map((quiz) => (
-                      <Paper key={quiz.id} sx={{ p: 1, my: 1, borderRadius: 2, width: "100%" }}>
-                        <Typography variant="body2">{quiz.question}</Typography>
-                      </Paper>
-                    ))
-                  ) : (
-                    <Typography variant="body2" color="textSecondary" textAlign="center">
-                      No quiz available for this video.
-                    </Typography>
-                  )}
-                </Box> */}
+                
                 {quizzes[content.id] && quizzes[content.id].length > 0 && (
                   <Box mt={2}>
                     <Button variant="contained" color="primary" size="small">
