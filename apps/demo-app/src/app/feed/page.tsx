@@ -63,12 +63,14 @@ const page = () => {
       const querySnapshot = await getDocs(collection(db, "videos"));
       const vids: VideoData[] = [];
       querySnapshot.forEach((doc) => {
-        vids.push({ id: doc.id, ...(doc.data() as VideoData) });
+        const data = doc.data() as VideoData;
+        vids.push({ id: doc.id, ...data });
       });
       setVideos(vids);
     };
     fetchVideos();
   }, []);
+  
 
   const currentVideo = videos[currentIndex];
 
