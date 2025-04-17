@@ -1,3 +1,6 @@
+'use client';
+
+
 import React from 'react';
 import { Box, Grid, Paper, Typography, Avatar, Button, IconButton, Card } from '@mui/material';
 import { styled } from '@mui/system';
