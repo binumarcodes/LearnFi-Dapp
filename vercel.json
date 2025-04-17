@@ -1,6 +1,8 @@
 {
-    "buildCommand": "pnpm turbo run build",
+    "buildCommand": "pnpm turbo run build --filter=demo-app",
     "installCommand": "pnpm install",
+    "outputDirectory": "apps/demo-app/.next",
+    "rootDirectory": "apps/demo-app",
     "env": {
       "NPM_PACKAGE_MANAGER": "pnpm"
     }
