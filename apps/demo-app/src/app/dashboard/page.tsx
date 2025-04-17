@@ -15,6 +15,8 @@ import {
   ListItemIcon,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { ListItemButton } from "@mui/material";
+
 import {
   VideoLibrary as VideoLibraryIcon,
   CloudUpload as CloudUploadIcon,
@@ -112,19 +114,23 @@ const Dashboard = () => {
       <Divider sx={{ my: 2 }} />
       <List>
         {sections.map(({ label, icon }) => (
-          <ListItem
-          button
-          key={label}
-          onClick={() => setActiveSection(label)}
-          sx={{
-            background: activeSection === label ? "gold" : "transparent",
-            cursor: "pointer",
-          }}
-        >
-          <ListItemIcon>{icon}</ListItemIcon>
-          <ListItemText primary={label} />
-        </ListItem>
-        
+
+          <List>
+            {sections.map(({ label, icon }) => (
+              <ListItemButton
+                key={label}
+                onClick={() => setActiveSection(label)}
+                sx={{
+                  background: activeSection === label ? "gold" : "transparent",
+                  cursor: "pointer",
+                }}
+              >
+                <ListItemIcon>{icon}</ListItemIcon>
+                <ListItemText primary={label} />
+              </ListItemButton>
+            ))}
+          </List>
+          
         ))}
       </List>
       <Divider sx={{ my: 2 }} />
