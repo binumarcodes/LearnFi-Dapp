@@ -63,7 +63,7 @@ const Dashboard = () => {
       name: "",
       profilePicture: "",
     });
-    const [userId, setUserId] = useState(null);
+    const [userId, setUserId] = useState<string | null>(null);
     const [imageFile, setImageFile] = useState(null);
 
 useEffect(() => {
