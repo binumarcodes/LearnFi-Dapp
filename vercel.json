@@ -1,0 +1,12 @@
+{
+    "builds": [
+      {
+        "src": "package.json",
+        "use": "@vercel/node"
+      }
+    ],
+    "env": {
+      "NPM_PACKAGE_MANAGER": "pnpm"
+    }
+  }
+  
