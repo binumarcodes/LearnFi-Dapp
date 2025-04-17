@@ -12,6 +12,13 @@ import { Button } from "@burnt-labs/ui";
 import "@burnt-labs/ui/dist/index.css";
 import { SignArb } from "../components/sign-arb.tsx";
 
+// top of the file
+type InstantiateResult = {
+  transactionHash: string;
+  height: number;
+};
+
+
 export default function Page(): JSX.Element {
   const router = useRouter(); // ✅ Initialize useRouter hook for navigation
   const { data: account } = useAbstraxionAccount();
