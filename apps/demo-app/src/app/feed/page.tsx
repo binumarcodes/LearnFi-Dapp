@@ -64,7 +64,7 @@ const page = () => {
       const vids: VideoData[] = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data() as VideoData;
-        vids.push({ id: doc.id, ...data });
+        vids.push({ ...data, id: doc.id });  // Spread data first, then override id
       });
       setVideos(vids);
     };
