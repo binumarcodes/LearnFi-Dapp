@@ -57,6 +57,9 @@ importers:
       firebase:
         specifier: ^11.6.0
         version: 11.6.0
+      next:
+        specifier: ^14.0.3
+        version: 14.2.26(react-dom@18.3.1)(react@18.3.1)
       prettier:
         specifier: ^3.0.3
         version: 3.5.3
