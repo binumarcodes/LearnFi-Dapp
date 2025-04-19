@@ -15,6 +15,7 @@ import {
   IconButton,
   Modal,
   Tooltip,
+  CircularProgress
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
@@ -24,6 +25,9 @@ import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import Xp from "../../../public/xp.svg"
+import FlashcardModal from "../../components/FlashcardModal";
+import GiftModal from "../../components/GiftModal";
+
 
 interface VideoData {
   id: string;
@@ -57,6 +61,18 @@ const page = () => {
   const [quizOpen, setQuizOpen] = useState(false);
   const [likes, setLikes] = useState<{ [videoId: string]: number }>({});
   const [liked, setLiked] = useState(false);
+  const [flashcardModalOpen, setFlashcardModalOpen] = useState(false);
+  const [giftModalOpen, setGiftModalOpen] = useState(false);
+  const [selectedGift, setSelectedGift] = useState<string | null>(null);
+
+  const handleGiftSend = () => {
+    console.log("Gift sent:", selectedGift);
+    // your logic here
+    setGiftModalOpen(false);
+    setSelectedGift(null);
+    alert(`You sent a ${selectedGift} gift!`);
+  };
+
 
   useEffect(() => {
     const fetchVideos = async () => {
@@ -182,14 +198,7 @@ useEffect(() => {
 
   const xpCount = currentIndex + 1; // Incremental XP count based on the current index
 
-  const [giftModalOpen, setGiftModalOpen] = useState(false);
-const [selectedGift, setSelectedGift] = useState<string | null>(null);
 
-const handleGiftSend = () => {
-  // Here you could handle the logic for sending the gift, e.g., calling an API or updating a local state.
-  alert(`You sent a ${selectedGift} gift!`);
-  setGiftModalOpen(false);
-};
 
 
   if (!currentVideo) {
@@ -301,66 +310,63 @@ const handleGiftSend = () => {
         {/* Video + Arrows Layout */}
         <Box sx={{ position: "relative", display: "flex", alignItems: "center" }}>
           <Box sx={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
-            <Box
-              sx={{
-                width: 380,
-                height: 650,
-                borderRadius: 3,
-                overflow: "hidden",
-                position: "relative",
-                boxShadow: 2,
-                backgroundColor: "#000",
-              }}
-            >
-              {!videoLoaded && <Skeleton variant="rectangular" width={380} height={650} />}
-              <video
-                key={currentVideo.id}
-                src={currentVideo.videoUrl}
-                controls
-                onLoadedData={() => setVideoLoaded(true)}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  display: videoLoaded ? "block" : "none",
-                }}
-              />
-              
-              {/* Video Details (similar to TikTok) */}
-              <Box
-                sx={{
-                  position: "absolute",
-                  bottom: 10,
-                  left: 10,
-                  color: "white",
-                  display: "flex",
-                  flexDirection: "row",  // Horizontal alignment
-                  gap: 1,
-                  padding: 1,
-                  backgroundColor: "rgba(0, 0, 0, 0.5)",  // Dark transparent background
-                  borderRadius: 2,  // Rounded corners for the background
-                  minWidth: "90%",  // Limit width to fit within screen
-                  whiteSpace: "nowrap",  // Prevent text from wrapping
-                  overflow: "hidden",  // Hide overflow if text exceeds container width
-                }}
-              >
-                <Typography variant="caption" fontWeight={300} noWrap sx={{ flexShrink: 0 }}>
-                  @{currentVideo.uploadedBy}
-                </Typography>
 
-                <Typography variant="body2" fontWeight={500} noWrap sx={{ flexShrink: 0 }}>
-                  {currentVideo.title}
-                </Typography>
+<Box sx={{ width: 380, height: 650, borderRadius: 3, overflow: 'hidden', position: 'relative', boxShadow: 2, backgroundColor: '#000' }}>
+  {/* Display Skeleton Loader until video is loaded */}
+  {!videoLoaded && (
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+      <CircularProgress sx={{ color: 'white' }} />
+    </Box>
+  )}
 
-                <Typography variant="body2" fontWeight={400} noWrap sx={{ flexShrink: 0 }}>
-                  {currentVideo.subject}
-                </Typography>
+<video
+  key={currentVideo.id}
+  src={currentVideo.videoUrl}
+  controls
+  autoPlay={videoLoaded}  // Dynamically set autoPlay when video is loaded
+  onLoadedData={() => setVideoLoaded(true)}  // Set videoLoaded to true when video is loaded
+  style={{
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    display: videoLoaded ? "block" : "none",  // Hide until the video is loaded
+  }}
+/>
 
-                <Typography variant="caption" fontWeight={300} noWrap sx={{ flexShrink: 0 }}>
-                  Topic {currentVideo.topicNumber}
-                </Typography>
-              </Box>
-            </Box>
+
+  {/* Video Details (similar to TikTok) */}
+  <Box
+    sx={{
+      position: 'absolute',
+      bottom: 10,
+      left: 10,
+      color: 'white',
+      display: 'flex',
+      flexDirection: 'row',
+      gap: 1,
+      padding: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      borderRadius: 2,
+      minWidth: '90%',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+    }}
+  >
+    <Typography variant="caption" fontWeight={300} noWrap sx={{ flexShrink: 0 }}>
+      @{currentVideo.uploadedBy}
+    </Typography>
+    <Typography variant="body2" fontWeight={500} noWrap sx={{ flexShrink: 0 }}>
+      {currentVideo.title}
+    </Typography>
+    <Typography variant="body2" fontWeight={400} noWrap sx={{ flexShrink: 0 }}>
+      {currentVideo.subject}
+    </Typography>
+    <Typography variant="caption" fontWeight={300} noWrap sx={{ flexShrink: 0 }}>
+      Topic {currentVideo.topicNumber}
+    </Typography>
+  </Box>
+</Box>
+
 
             {/* Arrow Buttons on the Right */}
             {/* Arrow Buttons with Like Icon */}
@@ -383,6 +389,7 @@ const handleGiftSend = () => {
                   "&:hover": { backgroundColor: "#b8860b" },
                   borderRadius: "50%",
                   padding: 2,
+                  marginBottom: 3
                 }}
               >
                 <ArrowUpwardIcon sx={{ color: "#000" }} />
@@ -427,145 +434,47 @@ const handleGiftSend = () => {
 
 
 
-<Modal
+<GiftModal
   open={giftModalOpen}
   onClose={() => setGiftModalOpen(false)}
->
-  <Box
+  selectedGift={selectedGift}
+  setSelectedGift={setSelectedGift}
+  handleGiftSend={handleGiftSend}
+  recipientName={currentVideo.uploadedBy}
+/>
+
+
+
+
+
+{/* Flashcard Icon */}
+<Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+  <IconButton
+    onClick={() => setFlashcardModalOpen(true)}  // Open flashcard modal
     sx={{
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      bgcolor: "#ffffff",
-      boxShadow: 8,
-      borderRadius: 4,
-      width: "90%",
-      maxWidth: 380,
-      p: 4,
-      outline: "none",
+      backgroundColor: "transparent",
+      "&:hover": { backgroundColor: "#dbeafe" },
+      borderRadius: "50%",
+      padding: 2,
     }}
   >
-    <Typography variant="h6" sx={{ mb: 2, textAlign: "center" }}>
-      Select a Gift
-    </Typography>
-
-    {/* Gift options */}
-    <Grid container spacing={2}>
-    <Grid component="div">
-        <Box
-          sx={{
-            p: 2,
-            backgroundColor: selectedGift === "Silver" ? "#fef3c7" : "#f8fafc",
-            borderRadius: 2,
-            cursor: "pointer",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            border: selectedGift === "Silver" ? "2px solid #f59e0b" : "1px solid #e2e8f0",
-            transition: "0.2s ease",
-            "&:hover": {
-              backgroundColor: "#f1f5f9",
-            },
-          }}
-          onClick={() => setSelectedGift("Silver")}
-        >
-          <img
-            src="/gift1.svg"  // Path to the SVG file in the public folder
-            alt="Silver Gift"
-            style={{ width: 40, height: 40, marginRight: 8 }}  // Adjust size
-          />
-          <Typography variant="body2" sx={{ color: "#000" }}>Silver - 10 Tokens</Typography>
-        </Box>
-      </Grid>
-
-      <Grid component="div">
-
-        <Box
-          sx={{
-            p: 2,
-            backgroundColor: selectedGift === "Diamond" ? "#fef3c7" : "#f8fafc",
-            borderRadius: 2,
-            cursor: "pointer",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            border: selectedGift === "Diamond" ? "2px solid #f59e0b" : "1px solid #e2e8f0",
-            transition: "0.2s ease",
-            "&:hover": {
-              backgroundColor: "#f1f5f9",
-            },
-          }}
-          onClick={() => setSelectedGift("Diamond")}
-        >
-          <img
-            src="/gift2.svg"  // Path to the SVG file in the public folder
-            alt="Diamond Gift"
-            style={{ width: 40, height: 40, marginRight: 8 }}  // Adjust size
-          />
-          <Typography variant="body2" sx={{ color: "#000" }}>Diamond - 20 Tokens</Typography>
-        </Box>
-      </Grid>
-
-      <Grid component="div">
-        <Box
-          sx={{
-            p: 2,
-            backgroundColor: selectedGift === "Gold" ? "#fef3c7" : "#f8fafc",
-            borderRadius: 2,
-            cursor: "pointer",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            border: selectedGift === "Gold" ? "2px solid #f59e0b" : "1px solid #e2e8f0",
-            transition: "0.2s ease",
-            "&:hover": {
-              backgroundColor: "#f1f5f9",
-            },
-          }}
-          onClick={() => setSelectedGift("Gold")}
-        >
-          <img
-            src="/level.svg"  // Path to the SVG file in the public folder
-            alt="Gold Gift"
-            style={{ width: 40, height: 40, marginRight: 8 }}  // Adjust size
-          />
-          <Typography variant="body2" sx={{ color: "#000" }}>Gold - 50 Tokens</Typography>
-        </Box>
-      </Grid>
+    <img 
+      src="/flashcard2.svg"  // Add your flashcard SVG in public folder
+      alt="Flashcard Icon"
+      style={{ width: 40, height: 40 }}
+    />
+  </IconButton>
+  <Typography variant="caption" sx={{ mt: 0.5 }}>
+    Flashcard
+  </Typography>
+</Box>
 
 
-     
-    </Grid>
-
-    {/* Send Gift Button */}
-    <Button
-      variant="contained"
-      fullWidth
-      sx={{
-        mt: 4,
-        py: 1.5,
-        fontWeight: "bold",
-        fontSize: "16px",
-        backgroundColor: "#000",
-        color: "#fff",
-        textTransform: "none",
-        borderRadius: 2,
-        boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-        "&:hover": {
-          backgroundColor: "#2563eb",
-        },
-      }}
-      onClick={handleGiftSend}
-      disabled={!selectedGift}
-    >
-      Send Gift
-    </Button>
-  </Box>
-</Modal>
-
-
-
+<FlashcardModal
+  flashcardModalOpen={flashcardModalOpen}
+  setFlashcardModalOpen={setFlashcardModalOpen}
+  onUpgrade={() => console.log("Navigate to premium upgrade")}
+/>
 
 
               <IconButton
@@ -575,6 +484,7 @@ const handleGiftSend = () => {
                   "&:hover": { backgroundColor: "#b8860b" },
                   borderRadius: "50%",
                   padding: 2,
+                  marginTop: 3
                 }}
               >
                 <ArrowDownwardIcon sx={{ color: "#000" }} />
