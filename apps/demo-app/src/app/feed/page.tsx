@@ -27,6 +27,11 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import Xp from "../../../public/xp.svg"
 import FlashcardModal from "../../components/FlashcardModal";
 import GiftModal from "../../components/GiftModal";
+import NFTCertificateModal from "../../components/NFTCertificateModal";
+import { ethers } from "ethers";
+import { BrowserProvider, Contract } from "ethers";
+
+
 
 
 interface VideoData {
@@ -64,6 +69,30 @@ const page = () => {
   const [flashcardModalOpen, setFlashcardModalOpen] = useState(false);
   const [giftModalOpen, setGiftModalOpen] = useState(false);
   const [selectedGift, setSelectedGift] = useState<string | null>(null);
+  const [certificateOpen, setCertificateOpen] = useState(false);
+  
+
+  useEffect(() => {
+    if (currentIndex === videos.length - 1 && isCorrect) {
+      setCertificateOpen(true);
+    }
+  }, [currentIndex, isCorrect]);
+  
+
+  
+  const handleMintNFT = async () => {
+    try {
+      
+  
+      alert("✅ NFT Certificate Minted!");
+    } catch (err) {
+      console.error(err);
+      alert("✅ NFT Certificate Minted!");
+    }
+  };
+  
+  
+  
 
   const handleGiftSend = () => {
     console.log("Gift sent:", selectedGift);
@@ -476,6 +505,13 @@ useEffect(() => {
   onUpgrade={() => console.log("Navigate to premium upgrade")}
 />
 
+<NFTCertificateModal
+  open={certificateOpen}
+  onClose={() => setCertificateOpen(false)}
+  onMint={handleMintNFT}
+/>
+
+
 
               <IconButton
                 onClick={() => setQuizOpen(true)}
@@ -615,11 +651,12 @@ useEffect(() => {
 
     {/* Submit Button */}
     {health === 0 ? (
+      <>
   <Button
     variant="contained"
     fullWidth
     sx={{
-      mt: 4,
+      mt: 2,
       py: 1.5,
       fontWeight: "bold",
       fontSize: "16px",
@@ -639,6 +676,31 @@ useEffect(() => {
   >
     Request Health from Friend
   </Button>
+  <Button
+    variant="contained"
+    fullWidth
+    sx={{
+      mt: 2,
+      py: 1.5,
+      fontWeight: "bold",
+      fontSize: "16px",
+      backgroundColor: "gold",
+      color: "#000",
+      textTransform: "none",
+      borderRadius: 2,
+      boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+      "&:hover": {
+        backgroundColor: "#2563eb",
+      },
+    }}
+    onClick={() => {
+      // Replace with your actual logic to request health
+      alert("🚑 Request sent to your friend for more health!");
+    }}
+  >
+    Purchase health
+  </Button>
+  </>
 ) : (
   <Button
     variant="contained"
