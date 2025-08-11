@@ -98,8 +98,8 @@ import {
               correctAnswer,
               videoUrl: downloadURL,
               uploadedAt: new Date(),
-              uploadedBy: username,  // Store tutor's username
-              userId: auth.currentUser?.uid,  // Store tutor's user ID
+              uploadedBy: username,
+              userId: auth.currentUser?.uid,
             });
             
             
@@ -235,7 +235,6 @@ import {
           </Grid>
         </Paper>
   
-        {/* Snackbar Notifications */}
         <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={() => setSnackbarOpen(false)} message={snackbarMessage} />
       </Box>
     );

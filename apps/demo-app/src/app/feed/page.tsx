@@ -1,761 +1,339 @@
-import {
-  Box,
-  Grid,
-  Typography,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  Paper,
-  Button,
-  Skeleton,
-  LinearProgress,
-  IconButton,
-  Modal,
-  Tooltip,
-} from "@mui/material";
+"use client";
 import { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, increment, getDoc, onSnapshot } from "firebase/firestore";
 import { db } from "../../components/util/firebase";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import Xp from "../../../public/xp.svg"
+import QuizModal from "../../components/modals/QuizModal";
+import StatusIndicators from "../../components/StatusIndicator";
+import VideoControls from "../../components/VideoControls"; // Import the VideoControls component
+import { useAbstraxionAccount } from "@burnt-labs/abstraxion";
+import OutOfHealthModal from "../../components/modals/OutOfHealthModal";
 
 interface VideoData {
   id: string;
   videoUrl: string;
-  quiz: string;
-  options: string[];
-  correctAnswer: string;
+  profilePicture?: string;
   username: string;
-  subject: string;
-  title: string;
-  topicNumber: number;
-  uploadedAt: string;
-  uploadedBy: string;
+  description: string;
+  likes: number;
+  comments: number;
+  shares: number;
+  saves: number;
+  quiz?: {
+    question: string;
+    options: string[];
+    answer: string;
+    explanation: string;
+  };
+  subject?: string;
+  title?: string;
+  topicNumber?: number;
+  uploadedAt?: string;
+  uploadedBy?: string;
 }
 
-const bounceAnimation = {
-  "@keyframes bounce": {
-    "0%": { transform: "translateY(0)" },
-    "50%": { transform: "translateY(-20px)" },
-    "100%": { transform: "translateY(0)" },
-  },
-};
+interface UserStats {
+  health: number;
+  xp: number;
+  healthRestoreTime?: string;
+}
 
-const page = () => {
+const Page = () => {
   const [videos, setVideos] = useState<VideoData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState("");
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [videoLoaded, setVideoLoaded] = useState(false);
-  const [health, setHealth] = useState(5);
-  const [quizOpen, setQuizOpen] = useState(false);
-  const [likes, setLikes] = useState<{ [videoId: string]: number }>({});
-  const [liked, setLiked] = useState(false);
+  const [watchedVideos, setWatchedVideos] = useState<Set<string>>(new Set());
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [showOutOfHealthModal, setShowOutOfHealthModal] = useState(false);
+  const [healthRestoreTime, setHealthRestoreTime] = useState("");
+  const [currentQuiz, setCurrentQuiz] = useState<{
+    question: string;
+    options: string[];
+    answer: string;
+    explanation: string;
+  } | null>(null);
+  const [stats, setStats] = useState<UserStats>({ health: 5, xp: 0 });
+  const [quizCompleted, setQuizCompleted] = useState(false);
+
+  const { data: account } = useAbstraxionAccount();
+
+  // Health status monitoring
+  useEffect(() => {
+    if (stats.health === 0 && stats.healthRestoreTime) {
+      setShowOutOfHealthModal(true);
+      setHealthRestoreTime(stats.healthRestoreTime);
+    } else {
+      setShowOutOfHealthModal(false);
+    }
+  }, [stats.health, stats.healthRestoreTime]);
+
+  // Real-time stats listener
+  useEffect(() => {
+    if (!account?.bech32Address) return;
+
+    const userRef = doc(db, "learners", account.bech32Address);
+    const unsubscribe = onSnapshot(userRef, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        setStats({
+          health: data.health || 5,
+          xp: data.xp || 0,
+          healthRestoreTime: data.healthRestoreTime || undefined
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, [account?.bech32Address]);
+
+  const shuffleArray = (array: any[]) => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  };
+
+  const calculateTimeRemaining = (restoreTime?: string): string => {
+    if (!restoreTime) return "00:00:00";
+    const now = new Date();
+    const restoreDate = new Date(restoreTime);
+    const diff = restoreDate.getTime() - now.getTime();
+    if (diff <= 0) return "00:00:00";
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
 
   useEffect(() => {
     const fetchVideos = async () => {
-      const querySnapshot = await getDocs(collection(db, "videos"));
-      const vids: VideoData[] = [];
-      querySnapshot.forEach((doc) => {
-        vids.push({ id: doc.id, ...(doc.data() as VideoData) });
-      });
-      setVideos(vids);
+      try {
+        const querySnapshot = await getDocs(collection(db, "content"));
+        const videosData: VideoData[] = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data() as VideoData
+        }));
+        setVideos(shuffleArray(videosData));
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching videos:", err);
+        setError(true);
+        setLoading(false);
+      }
     };
+
     fetchVideos();
   }, []);
 
-  const currentVideo = videos[currentIndex];
-
-  const handleAnswerSubmit = () => {
-    if (selectedAnswer === currentVideo.correctAnswer) {
-      setIsCorrect(true);
-      setTimeout(() => {
-        setSelectedAnswer("");
-        setIsCorrect(false);
-        setVideoLoaded(false);
-        setQuizOpen(false);
-        setCurrentIndex((prev) => Math.min(prev + 1, videos.length - 1));
-      }, 1000);
-    } else {
-      setHealth((prev) => Math.max(prev - 1, 0));
-      alert("❌ Incorrect! -1 ❤️");
+  const markAsWatched = (videoId: string) => {
+    if (!watchedVideos.has(videoId)) {
+      setWatchedVideos(prev => new Set(prev).add(videoId));
     }
   };
 
-  const handleLike = (videoId: string) => {
-    setLikes((prev) => ({
-      ...prev,
-      [videoId]: (prev[videoId] || 0) + 1,
-    }));
+  const handleQuizClick = () => {
+    if (currentVideo?.quiz) {
+      setCurrentQuiz(currentVideo.quiz);
+      setShowQuiz(true);
+    }
   };
 
-  if (health === 1 && selectedAnswer !== currentVideo.correctAnswer) {
-    const expiryTime = Date.now() + 5 * 60 * 60 * 1000; // 5 hours in milliseconds
-    localStorage.setItem("healthExpiry", expiryTime.toString());
-  }
+  const handleVideoChange = (index: number) => {
+    setCurrentIndex(index);
+    if (videos[index]?.id) {
+      markAsWatched(videos[index].id);
+    }
+  };
 
-  useEffect(() => {
-    const savedExpiry = localStorage.getItem("healthExpiry");
-    if (savedExpiry) {
-      const expiryTime = parseInt(savedExpiry);
-      const timeRemaining = expiryTime - Date.now();
-  
-      if (timeRemaining <= 0) {
-        setHealth(5);
-        localStorage.removeItem("healthExpiry");
-      } else {
-        setHealth(0);
+  const updateUserStats = async (isCorrect: boolean) => {
+    try {
+      if (!account?.bech32Address) {
+        console.error("No user account available");
+        return;
       }
+
+      const userRef = doc(db, "learners", account.bech32Address);
+      const userDoc = await getDoc(userRef);
+
+      if (!userDoc.exists()) {
+        console.error("User document doesn't exist");
+        return;
+      }
+
+      const currentData = userDoc.data();
+      const currentHealth = currentData.health || 5;
+      
+      let updates: any = {
+        xp: increment(isCorrect ? 10 : 0),
+        lastHealthUpdate: new Date().toISOString()
+      };
+
+      if (!isCorrect) {
+        const newHealth = Math.max(0, currentHealth - 1);
+        updates.health = newHealth;
+        
+        if (newHealth === 0) {
+          const restoreTime = new Date(Date.now() + 5 * 60 * 1000);
+          updates.healthRestoreTime = restoreTime.toISOString();
+        }
+      } else if (currentHealth === 0 && currentData.healthRestoreTime) {
+        updates.healthRestoreTime = null;
+      }
+
+      await updateDoc(userRef, updates);
+      console.log(`User stats updated: ${isCorrect ? "+10 XP" : "-1 Health"}`);
+      
+      // If quiz was answered correctly, mark as completed
+      if (isCorrect && currentVideo?.quiz) {
+        setQuizCompleted(true);
+      }
+    } catch (error) {
+      console.error("Error updating user stats:", error);
     }
-  }, []);
+  };
 
-
-const [expiryTimestamp, setExpiryTimestamp] = useState<number | null>(null);
-const [countdown, setCountdown] = useState("");
-
-// Reset everything on page reload
-useEffect(() => {
-  setHealth(5);  // Reset health on page reload
-  setExpiryTimestamp(null);  // Reset expiry timestamp on page reload
-  setCountdown("");  // Reset countdown
-}, []);
-
-// When user loses their last health
-useEffect(() => {
-  if (health === 0 && !expiryTimestamp) {
-    // Set expiry time for 5 hours from now
-    setExpiryTimestamp(Date.now() + 5 * 60 * 60 * 1000); 
-  }
-}, [health]);
-
-// Countdown timer logic (in-memory)
-useEffect(() => {
-  if (!expiryTimestamp) return;
-
-  const interval = setInterval(() => {
-    const timeLeft = expiryTimestamp - Date.now();
-    if (timeLeft <= 0) {
-      setHealth(5);  // Reset health
-      setCountdown("");  // Clear countdown
-      setExpiryTimestamp(null);  // Clear expiry timestamp
-      clearInterval(interval);
-    } else {
-      const hrs = Math.floor(timeLeft / (1000 * 60 * 60));
-      const mins = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-      const secs = Math.floor((timeLeft % (1000 * 60)) / 1000);
-      setCountdown(`${hrs}h ${mins}m ${secs}s`);
-    }
-  }, 1000);
-
-  return () => clearInterval(interval);
-}, [expiryTimestamp]);
-
-
-
-  const renderHearts = () =>
-    Array.from({ length: 5 }, (_, i) => (
-      <Tooltip key={i} title={i < health ? "Alive" : "Lost"} arrow>
-        <Box
-          component="span"
-          sx={{
-            mx: 0.3,
-            transition: "transform 0.2s",
-            transform: i === health - 1 ? "scale(1.2)" : "scale(1)",
-          }}
-        >
-          {i < health ? (
-            <FavoriteIcon sx={{ color: "#ef4444" }} />
-          ) : (
-            <FavoriteBorderIcon sx={{ color: "#cbd5e1" }} />
-          )}
-        </Box>
-      </Tooltip>
-    ));
-
-  const xpCount = currentIndex + 1; // Incremental XP count based on the current index
-
-  const [giftModalOpen, setGiftModalOpen] = useState(false);
-const [selectedGift, setSelectedGift] = useState<string | null>(null);
-
-const handleGiftSend = () => {
-  // Here you could handle the logic for sending the gift, e.g., calling an API or updating a local state.
-  alert(`You sent a ${selectedGift} gift!`);
-  setGiftModalOpen(false);
-};
-
-
-  if (!currentVideo) {
+  if (loading) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-          ...bounceAnimation,
-        }}
-      >
-        <img
-          src="/logo.png" // Path to your logo in the public folder
-          alt="Loading Logo"
-          style={{
-            width: 100,
-            height: 120,
-            animation: "bounce 1s infinite",
-          }}
-        />
-        <Typography variant="h6" sx={{ mt: 2, color: "#000" }}>
-          Loading...
-        </Typography>
-      </Box>
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-bounce">
+          <div className="w-16 h-16 bg-blue-500 rounded-full"></div>
+        </div>
+      </div>
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-red-500">Failed to load videos</p>
+      </div>
+    );
+  }
+
+  if (videos.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p>No videos available</p>
+      </div>
+    );
+  }
+
+  const currentVideo = videos[currentIndex];
+
   return (
-    <Box sx={{ minHeight: "100vh" }}>
-      <Paper elevation={4} sx={{ p: 3, backgroundColor: "#fff", minHeight: "100vh" }}>
-        {/* Header */}
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", mb: 4, gap: 2 }}>
-          <Typography fontSize="1rem" fontWeight={500} sx={{fontWeight: 600, color: "#334155", fontSize: 18,}}>
-            {renderHearts()}
-          </Typography>
+    <div className="relative h-screen overflow-hidden" style={{ backgroundColor: '#15202B' }}>
+      <StatusIndicators />
 
-          <Box
-  sx={{
-    width: { xs: "100%", sm: "40%" },
-    backgroundColor: "#f8fafc",
-    borderRadius: 2,
-    p: 2,
-    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-  }}
->
-  <Typography
-    variant="caption"
-    sx={{
-      display: "flex",
-      alignItems: "center",
-      gap: 0.5,
-      mb: 1,
-      fontWeight: 600,
-      color: "#334155",
-    }}
-  >
-    <img
-      src="/level.svg" // Path to your level SVG icon
-      alt="Level Icon"
-      width={25}
-      height={25}
-    />
-    Level {Math.floor(xpCount / 5) + 1} • {currentIndex + 1}/{videos.length}
-  </Typography>
-
-  <LinearProgress
-    variant="determinate"
-    value={(currentIndex + 1) / videos.length * 100}
-    sx={{
-      height: 12,
-      borderRadius: 5,
-      backgroundColor: "#e2e8f0",
-      "& .MuiLinearProgress-bar": {
-        background: `linear-gradient(90deg, #fffacd, #ffd700, #ff8c00)`,
-        transition: "all 0.5s ease-in-out",
-      },
-    }}
-  />
-</Box>
-
-
-          <Typography
-  variant="caption"
-  sx={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: 600,
-    color: "#334155",
-    fontSize: 15,
-    gap: 1,
-  }}
->
-  XP: {xpCount}
-  <img
-    src="/xp.svg"
-    alt="XP Icon"
-    width={30}
-    height={30}
-  />
-</Typography>
-
-
-        </Box>
-
-        {/* Video + Arrows Layout */}
-        <Box sx={{ position: "relative", display: "flex", alignItems: "center" }}>
-          <Box sx={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
-            <Box
-              sx={{
-                width: 380,
-                height: 650,
-                borderRadius: 3,
-                overflow: "hidden",
-                position: "relative",
-                boxShadow: 2,
-                backgroundColor: "#000",
-              }}
-            >
-              {!videoLoaded && <Skeleton variant="rectangular" width={380} height={650} />}
-              <video
-                key={currentVideo.id}
-                src={currentVideo.videoUrl}
-                controls
-                onLoadedData={() => setVideoLoaded(true)}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  display: videoLoaded ? "block" : "none",
-                }}
-              />
-              
-              {/* Video Details (similar to TikTok) */}
-              <Box
-                sx={{
-                  position: "absolute",
-                  bottom: 10,
-                  left: 10,
-                  color: "white",
-                  display: "flex",
-                  flexDirection: "row",  // Horizontal alignment
-                  gap: 1,
-                  padding: 1,
-                  backgroundColor: "rgba(0, 0, 0, 0.5)",  // Dark transparent background
-                  borderRadius: 2,  // Rounded corners for the background
-                  minWidth: "90%",  // Limit width to fit within screen
-                  whiteSpace: "nowrap",  // Prevent text from wrapping
-                  overflow: "hidden",  // Hide overflow if text exceeds container width
-                }}
-              >
-                <Typography variant="caption" fontWeight={300} noWrap sx={{ flexShrink: 0 }}>
-                  @{currentVideo.uploadedBy}
-                </Typography>
-
-                <Typography variant="body2" fontWeight={500} noWrap sx={{ flexShrink: 0 }}>
-                  {currentVideo.title}
-                </Typography>
-
-                <Typography variant="body2" fontWeight={400} noWrap sx={{ flexShrink: 0 }}>
-                  {currentVideo.subject}
-                </Typography>
-
-                <Typography variant="caption" fontWeight={300} noWrap sx={{ flexShrink: 0 }}>
-                  Topic {currentVideo.topicNumber}
-                </Typography>
-              </Box>
-            </Box>
-
-            {/* Arrow Buttons on the Right */}
-            {/* Arrow Buttons with Like Icon */}
-            <Box
-              sx={{
-                position: "absolute",
-                right: 350,
-                top: "50%",
-                transform: "translateY(-50%)",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 1,
-              }}
-            >
-              <IconButton
-                onClick={() => setQuizOpen(false)}
-                sx={{
-                  backgroundColor: "gold",
-                  "&:hover": { backgroundColor: "#b8860b" },
-                  borderRadius: "50%",
-                  padding: 2,
-                }}
-              >
-                <ArrowUpwardIcon sx={{ color: "#000" }} />
-              </IconButton>
-
-              {/* Like Button with Count */}
-              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <IconButton
-                  onClick={() => setLiked(!liked)}
-                  sx={{
-                    backgroundColor: "transparent",
-                    "&:hover": { backgroundColor: "transparent" },
-                  }}
-                >
-                  <FavoriteIcon sx={{ color: liked ? "#ef4444" : "#fca5a5" }} />
-                </IconButton>
-                <Typography variant="caption" sx={{ mt: 0.5 }}>
-                  {liked ? 1 : 0} likes
-                </Typography>
-              </Box>
-
-              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-  <IconButton
-    onClick={() => setGiftModalOpen(true)}  // Open gift modal
-    sx={{
-      backgroundColor: "transparent",
-      "&:hover": { backgroundColor: "#ffd700" },
-      borderRadius: "50%",
-      padding: 2,
-    }}
-  >
-    <img 
-      src="/shop.svg"  // Path to the SVG file in the public folder
-      alt="Gift Icon"
-      style={{ width: 30, height: 30 }}  // Adjust the size as needed
-    />
-  </IconButton>
-  <Typography variant="caption" sx={{ mt: 0.5 }}>
-    Send a Gift
-  </Typography>
-</Box>
-
-
-
-<Modal
-  open={giftModalOpen}
-  onClose={() => setGiftModalOpen(false)}
->
-  <Box
-    sx={{
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      bgcolor: "#ffffff",
-      boxShadow: 8,
-      borderRadius: 4,
-      width: "90%",
-      maxWidth: 380,
-      p: 4,
-      outline: "none",
-    }}
-  >
-    <Typography variant="h6" sx={{ mb: 2, textAlign: "center" }}>
-      Select a Gift
-    </Typography>
-
-    {/* Gift options */}
-    <Grid container spacing={2}>
-      <Grid item xs={6}>
-        <Box
-          sx={{
-            p: 2,
-            backgroundColor: selectedGift === "Silver" ? "#fef3c7" : "#f8fafc",
-            borderRadius: 2,
-            cursor: "pointer",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            border: selectedGift === "Silver" ? "2px solid #f59e0b" : "1px solid #e2e8f0",
-            transition: "0.2s ease",
-            "&:hover": {
-              backgroundColor: "#f1f5f9",
-            },
-          }}
-          onClick={() => setSelectedGift("Silver")}
-        >
-          <img
-            src="/gift1.svg"  // Path to the SVG file in the public folder
-            alt="Silver Gift"
-            style={{ width: 40, height: 40, marginRight: 8 }}  // Adjust size
-          />
-          <Typography variant="body2" sx={{ color: "#000" }}>Silver - 10 Tokens</Typography>
-        </Box>
-      </Grid>
-
-      <Grid item xs={6}>
-        <Box
-          sx={{
-            p: 2,
-            backgroundColor: selectedGift === "Diamond" ? "#fef3c7" : "#f8fafc",
-            borderRadius: 2,
-            cursor: "pointer",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            border: selectedGift === "Diamond" ? "2px solid #f59e0b" : "1px solid #e2e8f0",
-            transition: "0.2s ease",
-            "&:hover": {
-              backgroundColor: "#f1f5f9",
-            },
-          }}
-          onClick={() => setSelectedGift("Diamond")}
-        >
-          <img
-            src="/gift2.svg"  // Path to the SVG file in the public folder
-            alt="Diamond Gift"
-            style={{ width: 40, height: 40, marginRight: 8 }}  // Adjust size
-          />
-          <Typography variant="body2" sx={{ color: "#000" }}>Diamond - 20 Tokens</Typography>
-        </Box>
-      </Grid>
-
-      <Grid item xs={6}>
-        <Box
-          sx={{
-            p: 2,
-            backgroundColor: selectedGift === "Gold" ? "#fef3c7" : "#f8fafc",
-            borderRadius: 2,
-            cursor: "pointer",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            border: selectedGift === "Gold" ? "2px solid #f59e0b" : "1px solid #e2e8f0",
-            transition: "0.2s ease",
-            "&:hover": {
-              backgroundColor: "#f1f5f9",
-            },
-          }}
-          onClick={() => setSelectedGift("Gold")}
-        >
-          <img
-            src="/level.svg"  // Path to the SVG file in the public folder
-            alt="Gold Gift"
-            style={{ width: 40, height: 40, marginRight: 8 }}  // Adjust size
-          />
-          <Typography variant="body2" sx={{ color: "#000" }}>Gold - 50 Tokens</Typography>
-        </Box>
-      </Grid>
-
-
-     
-    </Grid>
-
-    {/* Send Gift Button */}
-    <Button
-      variant="contained"
-      fullWidth
-      sx={{
-        mt: 4,
-        py: 1.5,
-        fontWeight: "bold",
-        fontSize: "16px",
-        backgroundColor: "#000",
-        color: "#fff",
-        textTransform: "none",
-        borderRadius: 2,
-        boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-        "&:hover": {
-          backgroundColor: "#2563eb",
-        },
-      }}
-      onClick={handleGiftSend}
-      disabled={!selectedGift}
-    >
-      Send Gift
-    </Button>
-  </Box>
-</Modal>
-
-
-
-
-
-              <IconButton
-                onClick={() => setQuizOpen(true)}
-                sx={{
-                  backgroundColor: "gold",
-                  "&:hover": { backgroundColor: "#b8860b" },
-                  borderRadius: "50%",
-                  padding: 2,
-                }}
-              >
-                <ArrowDownwardIcon sx={{ color: "#000" }} />
-              </IconButton>
-            </Box>
-          </Box>
-        </Box>
-
-        {/* Quiz Modal */}
-        <Modal open={quizOpen} onClose={() => setQuizOpen(false)}>
-  <Box
-    sx={{
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      bgcolor: "#ffffff",
-      boxShadow: 8,
-      borderRadius: 4,
-      width: "90%",
-      maxWidth: 380,
-      p: 4,
-      outline: "none",
-    }}
-  >
-    {/* Header */}
-    <Box sx={{ mb: 2 }}>
-      <Typography
-        variant="caption"
-        sx={{
-          color: "#94a3b8",
-          fontWeight: 500,
-          letterSpacing: 1,
-          textTransform: "uppercase",
-        }}
-      >
-        Mentor:
-      </Typography>
-      <Typography
-        variant="subtitle1"
-        sx={{
-          color: "#0f172a",
-          fontWeight: 600,
-        }}
-      >
-        @{currentVideo.uploadedBy || "Anonymous"}
-      </Typography>
-    </Box>
-
-    {/* Question */}
-    <Typography
-      variant="h6"
-      sx={{
-        fontWeight: 700,
-        color: "#1e293b",
-        mb: 3,
-        lineHeight: 1.5,
-      }}
-    >
-      {currentVideo.quiz}
-    </Typography>
-
-    {/* Options */}
-    <RadioGroup
-      value={selectedAnswer}
-      onChange={(e) => setSelectedAnswer(e.target.value)}
-    >
-      {currentVideo.options.map((option, idx) => (
-        <FormControlLabel
-          key={idx}
-          value={option}
-          control={<Radio sx={{ display: "none" }} />}
-          label={
-            <Box
-              sx={{
-                px: 3,
-                py: 1.5,
-                borderRadius: 2,
-                cursor: "pointer",
-                fontWeight: 500,
-                backgroundColor:
-                  selectedAnswer === option ? "#fef3c7" : "#f8fafc",
-                border:
-                  selectedAnswer === option
-                    ? "2px solid #f59e0b"
-                    : "1px solid #e2e8f0",
-                color: "#1e293b",
-                transition: "0.2s ease",
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                "&:hover": {
-                  backgroundColor: "#f1f5f9",
-                },
-              }}
-            >
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: 600,
-                  minWidth: 20,
-                  color: "#64748b",
-                }}
-              >
-                {idx + 1}.
-              </Typography>
-              <Typography variant="body2">{option}</Typography>
-            </Box>
-          }
-          disabled={isCorrect}
-          sx={{ mb: 1 }}
+      <div className="relative h-full w-full flex items-center justify-center">
+        <video
+          key={currentVideo.id}
+          src={currentVideo.videoUrl}
+          controls
+          className="h-full w-full object-contain"
+          autoPlay
+          playsInline
         />
-      ))}
-    </RadioGroup>
-    {health === 0 && (
-  <Typography
-    sx={{
-      mt: 2,
-      color: "#ef4444",
-      fontWeight: 500,
-      textAlign: "center",
-    }}
-  >
-    ❤️ Out of health. Next heart in: {countdown}
-  </Typography>
-)}
+        
+        <div className="absolute bottom-0 left-0 p-4 w-full bg-gradient-to-t from-black to-transparent">
+          <div className="flex items-center mb-2">
+            <img 
+              src={currentVideo.profilePicture || "/default-profile.png"} 
+              alt={currentVideo.username}
+              className="w-10 h-10 rounded-full mr-3"
+            />
+            <span className="text-white font-bold">{currentVideo.username}</span>
+          </div>
+          <p className="text-white text-sm mb-2">{currentVideo.description}</p>
+          
+          {(currentVideo.subject || currentVideo.title) && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {currentVideo.subject && (
+                <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">
+                  {currentVideo.subject}
+                </span>
+              )}
+              {currentVideo.title && (
+                <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded">
+                  {currentVideo.title}
+                </span>
+              )}
+              {currentVideo.topicNumber && (
+                <span className="text-xs bg-gray-600 text-white px-2 py-1 rounded">
+                  Topic {currentVideo.topicNumber}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
+      {/* Video Controls Component */}
+      <VideoControls
+        videoId={currentVideo.id}
+        initialLikes={currentVideo.likes}
+        initialComments={currentVideo.comments}
+        initialShares={currentVideo.shares}
+        initialSaves={currentVideo.saves}
+        quizRequired={!!currentVideo.quiz}
+        quizCompleted={quizCompleted}
+        isHealthDepleted={stats.health === 0}
+        timeRemaining={healthRestoreTime}
+        onQuizPress={handleQuizClick}
+        onPurchaseHealth={() => updateUserStats(true)}
+      />
 
-    {/* Submit Button */}
-    {health === 0 ? (
-  <Button
-    variant="contained"
-    fullWidth
-    sx={{
-      mt: 4,
-      py: 1.5,
-      fontWeight: "bold",
-      fontSize: "16px",
-      backgroundColor: "#000",
-      color: "#fff",
-      textTransform: "none",
-      borderRadius: 2,
-      boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-      "&:hover": {
-        backgroundColor: "#2563eb",
-      },
-    }}
-    onClick={() => {
-      // Replace with your actual logic to request health
-      alert("🚑 Request sent to your friend for more health!");
-    }}
-  >
-    Request Health from Friend
-  </Button>
-) : (
-  <Button
-    variant="contained"
-    onClick={handleAnswerSubmit}
-    disabled={isCorrect || selectedAnswer === ""}
-    fullWidth
-    sx={{
-      mt: 4,
-      py: 1.5,
-      fontWeight: "bold",
-      fontSize: "16px",
-      backgroundColor: "gold",
-      color: "#000",
-      textTransform: "none",
-      borderRadius: 2,
-      boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-      "&:hover": {
-        backgroundColor: "#e6b800",
-      },
-    }}
-  >
-    Submit Answer
-  </Button>
-)}
+      {/* Navigation Controls */}
+      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex flex-col space-y-4">
+        <button 
+          className="bg-gray-800 bg-opacity-50 rounded-full p-2"
+          onClick={() => handleVideoChange(Math.max(0, currentIndex - 1))}
+          disabled={currentIndex === 0}
+        >
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
+          </svg>
+        </button>
+        <button 
+          className="bg-gray-800 bg-opacity-50 rounded-full p-2"
+          onClick={() => handleVideoChange(Math.min(videos.length - 1, currentIndex + 1))}
+          disabled={currentIndex === videos.length - 1}
+        >
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
 
-  </Box>
-</Modal>
+      {currentQuiz && (
+        <QuizModal
+          visible={showQuiz}
+          question={currentQuiz.question}
+          options={currentQuiz.options}
+          answer={currentQuiz.answer}
+          explanation={currentQuiz.explanation}
+          onQuizComplete={async (isCorrect) => {
+            setShowQuiz(false);
+            await updateUserStats(isCorrect);
+          }}
+          onCancel={() => setShowQuiz(false)}
+        />
+      )}
 
-
-
-      </Paper>
-    </Box>
+      <OutOfHealthModal
+        visible={showOutOfHealthModal}
+        timeRemaining={calculateTimeRemaining(healthRestoreTime)}
+        onClose={() => setShowOutOfHealthModal(false)}
+        onPurchaseHealth={() => {
+          updateUserStats(true);
+          setShowOutOfHealthModal(false);
+        }}
+      />
+    </div>
   );
 };
 
-export default page;
+export default Page;

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // ✅ Import useRouter for navigation
+import { useRouter } from "next/navigation";
 import {
   Abstraxion,
   useAbstraxionAccount,
@@ -11,34 +11,71 @@ import {
 import { Button } from "@burnt-labs/ui";
 import "@burnt-labs/ui/dist/index.css";
 import { SignArb } from "../components/sign-arb.tsx";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "../components/util/firebase";
+import UserInfoModal from "../components/UserInfoModal";
 
 export default function Page(): JSX.Element {
-  const router = useRouter(); // ✅ Initialize useRouter hook for navigation
+  const router = useRouter();
   const { data: account } = useAbstraxionAccount();
   const { client, signArb, logout } = useAbstraxionSigningClient();
 
-  // General state hooks
-  const [, setShowModal]: [
-    boolean,
-    React.Dispatch<React.SetStateAction<boolean>>,
-  ] = useModal();
+  // State hooks
+  const [, setShowModal] = useModal();
   const [loading, setLoading] = useState(false);
   const [instantiateResult, setInstantiateResult] = useState<InstantiateResult | undefined>(undefined);
+  const [showUserInfoModal, setShowUserInfoModal] = useState(false);
+  const [userChecked, setUserChecked] = useState(false);
 
   const blockExplorerUrl = `https://www.mintscan.io/xion-testnet/tx/${instantiateResult?.transactionHash}`;
 
-  // Automatically navigate to the dashboard once the user is logged in
+  // Check user existence in Firebase when account changes
   useEffect(() => {
-    if (account?.bech32Address) {
-      router.push("/dashboard"); // Navigate to dashboard if user is logged in
+    if (account?.bech32Address && !userChecked) {
+      checkUserExists(account.bech32Address);
     }
-  }, [account?.bech32Address, router]);
+  }, [account?.bech32Address, userChecked]);
+
+  async function checkUserExists(walletAddress: string): Promise<void> {
+    try {
+      const userDocRef = doc(db, "learners", walletAddress);
+      const userDocSnap = await getDoc(userDocRef);
+      
+      if (!userDocSnap.exists()) {
+        // User doesn't exist, show modal for additional info
+        setShowUserInfoModal(true);
+      } else {
+        // User exists, proceed to dashboard
+        router.push("/dashboard");
+      }
+      setUserChecked(true);
+    } catch (error) {
+      console.error("Error checking user existence:", error);
+    }
+  }
+
+  async function handleUserInfoSubmit(fullName: string, username: string, avatar: string): Promise<void> {
+  try {
+    if (!account?.bech32Address) return;
+    
+    await setDoc(doc(db, "learners", account.bech32Address), {
+      walletAddress: account.bech32Address,
+      fullName,
+      username,
+      avatar, // Add the avatar URL
+      createdAt: new Date().toISOString(),
+    });
+    
+    setShowUserInfoModal(false);
+    router.push("/dashboard");
+  } catch (error) {
+    console.error("Error creating user document:", error);
+  }
+}
 
   async function claimSeat(): Promise<void> {
     setLoading(true);
-
     try {
-      // Sample contract instantiation message
       const msg = {
         type_urls: ["/cosmwasm.wasm.v1.MsgInstantiateContract"],
         grant_configs: [
@@ -125,6 +162,13 @@ export default function Page(): JSX.Element {
           setShowModal(false);
         }}
       />
+
+      {showUserInfoModal && (
+        <UserInfoModal 
+          onClose={() => setShowUserInfoModal(false)}
+          onSubmit={handleUserInfoSubmit}
+        />
+      )}
 
       {instantiateResult ? (
         <div className="flex flex-col rounded border-2 border-black p-2 dark:border-white">

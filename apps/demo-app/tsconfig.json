@@ -1,13 +1,27 @@
 {
-  "extends": "@burnt-labs/tsconfig/nextjs.json",
   "compilerOptions": {
+    "target": "ES6",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
     "plugins": [
       {
         "name": "next"
       }
-    ],
-    "moduleResolution": "Bundler",
-    "strictNullChecks": true
+    ]
   },
   "include": [
     "next-env.d.ts",

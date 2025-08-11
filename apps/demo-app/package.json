@@ -13,24 +13,19 @@
     "deploy:worker": "npm run build:worker && wrangler deploy"
   },
   "dependencies": {
-    "@burnt-labs/abstraxion": "workspace:*",
-    "@burnt-labs/abstraxion-core": "workspace:*",
-    "@burnt-labs/constants": "workspace:*",
-    "@burnt-labs/signers": "workspace:*",
-    "@burnt-labs/ui": "workspace:*",
+    "@burnt-labs/abstraxion": "1.0.0-alpha.65",
     "@cosmjs/amino": "^0.32.4",
     "@cosmjs/cosmwasm-stargate": "^0.32.4",
     "@cosmjs/crypto": "^0.32.4",
     "@heroicons/react": "^2.1.4",
     "cosmjs-types": "^0.9.0",
+    "framer-motion": "^12.23.12",
     "next": "^14.0.3",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-icons": "^5.5.0"
   },
   "devDependencies": {
-    "@burnt-labs/eslint-config-custom": "workspace:*",
-    "@burnt-labs/tailwind-config": "workspace:*",
-    "@burnt-labs/tsconfig": "workspace:*",
     "@next/eslint-plugin-next": "^13.4.19",
     "@opennextjs/aws": "^3.3.1",
     "@opennextjs/cloudflare": "^0.3.8",

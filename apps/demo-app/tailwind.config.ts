@@ -1,10 +1,14 @@
-// tailwind config is required for editor support
+import type { Config } from 'tailwindcss'
 
-import type { Config } from "tailwindcss";
-import sharedConfig from "@burnt-labs/tailwind-config/tailwind.config.ts";
+const config: Config = {
+  content: [
+    './src/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
 
-const config: Pick<Config, "presets"> = {
-  presets: [sharedConfig],
-};
-
-export default config;
+export default config
