@@ -5,6 +5,8 @@ import { AbstraxionProvider } from '@burnt-labs/abstraxion';
 import '@burnt-labs/abstraxion/dist/index.css';
 import { ThemeProvider } from '../components/ThemeProvider';
 import { AuthProvider } from '../context/AuthContext'; // 👈 Add this import
+import './globals.css'
+
 
 const inter = Inter({ subsets: ['latin'] });
 
