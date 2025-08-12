@@ -1,6 +1,6 @@
 module.exports = {
   root: true,
-  extends: ["@burnt-labs/eslint-config-custom/next"],
+  extends: ["next", "next/core-web-vitals"],
   rules: {
     "no-console": ["error", { allow: ["warn", "error"] }],
     "no-alert": "off",
