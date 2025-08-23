@@ -1,134 +1,103 @@
 "use client";
-import { useState, useEffect } from "react";
-import { 
-  Box, Card, Typography, CircularProgress, Grid, Paper, IconButton, Button 
-} from "@mui/material";
-import { VideoCameraFront, CloudOff } from "@mui/icons-material";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { auth, db } from "../../components/util/firebase"
-import { onAuthStateChanged } from "firebase/auth";
 
-const MyContents = () => {
-  const [contents, setContents] = useState<any[]>([]);
+import { useEffect, useState } from "react";
+import {
+  collection,
+  getDocs,
+  deleteDoc,
+  doc,
+  Timestamp,
+} from "firebase/firestore";
+import { db } from "../../components/util/firebase"; 
+import { Button } from "../../components/ui/Button"
+
+interface Content {
+  id: string;
+  title?: string;
+  subject?: string;
+  language?: string;
+  videoUrl?: string;
+  createdAt?: Timestamp;
+}
+
+export default function MyContents() {
+  const [contents, setContents] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
-  const [quizzes, setQuizzes] = useState<{ [key: string]: any[] }>({});
 
   useEffect(() => {
-    const fetchContents = async (userId: string) => {
+    const fetchContents = async () => {
       try {
-        const contentsRef = collection(db, "videos");
-        const q = query(contentsRef, where("userId", "==", userId));
-        const querySnapshot = await getDocs(q);
-    
-        const fetchedContents = querySnapshot.docs
-          .map(doc => ({ id: doc.id, ...doc.data() }))
-          .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)); // Sort by newest first
-    
+        const querySnapshot = await getDocs(collection(db, "contents"));
+        const fetchedContents: Content[] = querySnapshot.docs
+          .map(
+            (docSnap) =>
+              ({
+                id: docSnap.id,
+                ...(docSnap.data() as Omit<Content, "id">),
+              } as Content)
+          )
+          .sort(
+            (a, b) =>
+              (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
+          );
+
         setContents(fetchedContents);
-        fetchQuizzes(fetchedContents);
       } catch (error) {
-        console.error("Error fetching contents:", error);
+        console.error("Error fetching contents: ", error);
       } finally {
         setLoading(false);
       }
     };
-    
 
-    const fetchQuizzes = async (videos: any[]) => {
-      const quizzesData: { [key: string]: any[] } = {};
-      for (let video of videos) {
-        const quizzesRef = collection(db, "quizzes");
-        const q = query(quizzesRef, where("videoId", "==", video.id));
-        const querySnapshot = await getDocs(q);
-        quizzesData[video.id] = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      }
-      setQuizzes(quizzesData);
-    };
-
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        fetchContents(user.uid);
-      } else {
-        setContents([]);
-        setQuizzes({});
-        setLoading(false);
-      }
-    });
-
-    return () => unsubscribe();
+    fetchContents();
   }, []);
 
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "contents", id));
+      setContents((prev) => prev.filter((content) => content.id !== id));
+    } catch (error) {
+      console.error("Error deleting content: ", error);
+    }
+  };
+
+  if (loading) return <p className="p-4">Loading...</p>;
+
   return (
-    <Box sx={{ maxWidth: 1200, mx: "auto", mt: 5 }}>
-      <Typography variant="h5" gutterBottom align="center" sx={{ fontWeight: "600", color: "#012b11", mb: 3 }}>
-        My Uploaded Contents
-      </Typography>
-
-      {loading ? (
-        <Box display="flex" justifyContent="center" mt={5}>
-          <CircularProgress />
-        </Box>
-      ) : contents.length === 0 ? (
-        <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="50vh">
-          <Card sx={{ p: 4, textAlign: "center", maxWidth: 400, borderRadius: 3 }}>
-          <IconButton sx={{ fontSize: 60, color: '#FFD700' }}>
-            <CloudOff fontSize="inherit" />
-          </IconButton>
-
-            <Typography variant="h6" sx={{ mt: 2 }}>
-              No Content Found
-            </Typography>
-            <Typography variant="body2" color="textSecondary">
-              You haven't uploaded any content yet.
-            </Typography>
-          </Card>
-        </Box>
+    <div className="p-6">
+      <h1 className="text-xl font-bold mb-4">My Contents</h1>
+      {contents.length === 0 ? (
+        <p>No content available</p>
       ) : (
-        <Grid container spacing={2}>
+        <ul className="space-y-4">
           {contents.map((content) => (
-            <Grid item xs={12} sm={6} md={4} key={content.id}>
-              <Paper elevation={3} sx={{ p: 2, borderRadius: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <VideoCameraFront sx={{ fontSize: 40, color: "gold" }} />
-                <Typography variant="h6" sx={{ mt: 1, textAlign: "center" }}>{content.title}</Typography>
-                <Typography variant="body2" color="textSecondary" textAlign="center">
-                  {content.subject} - {content.language}
-                </Typography>
+            <li
+              key={content.id}
+              className="border rounded-lg p-4 shadow-sm flex justify-between items-center"
+            >
+              <div>
+                <h2 className="font-semibold">{content.title}</h2>
+                <p className="text-sm text-gray-500">
+                  {content.subject} • {content.language}
+                </p>
                 {content.videoUrl && (
-                  <Box mt={1}>
-                    <video width="100%" controls style={{ borderRadius: 10 }}>
-                      <source src={content.videoUrl} type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
-                  </Box>
+                  <video
+                    controls
+                    className="mt-2 w-64 rounded-md"
+                    src={content.videoUrl}
+                  />
                 )}
-                {/* <Box mt={2}>
-                  <Typography variant="subtitle1">Quiz</Typography>
-                  {quizzes[content.id] && quizzes[content.id].length > 0 ? (
-                    quizzes[content.id].map((quiz) => (
-                      <Paper key={quiz.id} sx={{ p: 1, my: 1, borderRadius: 2, width: "100%" }}>
-                        <Typography variant="body2">{quiz.question}</Typography>
-                      </Paper>
-                    ))
-                  ) : (
-                    <Typography variant="body2" color="textSecondary" textAlign="center">
-                      No quiz available for this video.
-                    </Typography>
-                  )}
-                </Box> */}
-                {quizzes[content.id] && quizzes[content.id].length > 0 && (
-                  <Box mt={2}>
-                    <Button variant="contained" color="primary" size="small">
-                      Take Quiz
-                    </Button>
-                  </Box>
-                )}
-              </Paper>
-            </Grid>
+              </div>
+              <Button
+                // variant="destructive"
+                onClick={() => handleDelete(content.id)}
+              >
+                Delete
+              </Button>
+            </li>
           ))}
-        </Grid>
+        </ul>
       )}
-    </Box>
+    </div>
   );
-};
-
-export default MyContents;
+}

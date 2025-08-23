@@ -57,10 +57,14 @@ import {
     };
   
     const { getRootProps, getInputProps } = useDropzone({
-      onDrop,
-      accept: "video/*",
-      multiple: false,
-    });
+  onDrop,
+  accept: {
+    'video/*': [],   // only video files
+  },
+  multiple: false,
+});
+
+    
   
     const handleUpload = async () => {
       if (!video || !title || !subject || !language || !quiz || options.some((opt) => !opt) || !correctAnswer) {
@@ -143,7 +147,7 @@ import {
           </Typography>
           <Grid container spacing={3}>
             {/* Left Side Form */}
-            <Grid item xs={12} md={6} sx={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: "50%" }}>
+            <Grid sx={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: "50%" }}>
               <TextField fullWidth label="Title" value={title} onChange={(e) => setTitle(e.target.value)} sx={{ mb: 2 }} />
   
               <TextField fullWidth select label="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} sx={{ mb: 2 }}>
@@ -193,7 +197,7 @@ import {
             </Grid>
   
             {/* Right Side: Video Upload + Preview */}
-            <Grid item xs={12} md={6} sx={{ display: "flex", flexDirection: "column", width: "45%" }}>
+            <Grid sx={{ display: "flex", flexDirection: "column", width: "45%" }}>
               <Typography variant="h6" align="center" gutterBottom>
                 Upload Video
               </Typography>

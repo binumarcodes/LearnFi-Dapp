@@ -10,10 +10,16 @@ import {
 } from "@burnt-labs/abstraxion";
 import { Button } from "@burnt-labs/ui";
 import "@burnt-labs/ui/dist/index.css";
-import { SignArb } from "../components/sign-arb.tsx";
+import { SignArb } from "../components/sign-arb";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../components/util/firebase";
 import UserInfoModal from "../components/UserInfoModal";
+
+
+type InstantiateResult = {
+  transactionHash: string;
+  height: number;
+};
 
 export default function Page(): JSX.Element {
   const router = useRouter();

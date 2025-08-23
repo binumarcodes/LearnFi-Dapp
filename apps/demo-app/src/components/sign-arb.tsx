@@ -3,9 +3,10 @@ import { useState } from "react";
 import {
   useAbstraxionAccount,
   useAbstraxionSigningClient,
+  type GranteeSignerClient,   // ✅ comes from here, not abstracion-core
 } from "@burnt-labs/abstraxion";
-import type { GranteeSignerClient } from "@burnt-labs/abstraxion-core";
-import { BlockingButton } from "./blocking-button.tsx";
+import { BlockingButton } from "./blocking-button";
+
 
 const copyToClipboard = (textToCopy: string) => async () => {
   await window.navigator.clipboard.writeText(textToCopy);

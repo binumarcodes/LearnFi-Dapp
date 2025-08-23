@@ -43,25 +43,23 @@ export default function UserInfoModal({ onClose, onSubmit }: UserInfoModalProps)
     try {
       const storage = getStorage();
       const avatarsRef = ref(storage, "avatars/all");
-      const result = await listAll(avatarsRef, {
-        maxResults: AVATARS_PER_PAGE,
-        pageToken: paginationToken || undefined,
-      });
+      const result = await listAll(avatarsRef);
 
-      const nonDefaultItems = result.items
-        .filter(item => !item.name.startsWith("default"))
-        .sort((a, b) => {
-          const aNum = parseInt(a.name.match(/\d+/)?.[0] || "0", 10);
-          const bNum = parseInt(b.name.match(/\d+/)?.[0] || "0", 10);
-          return aNum - bNum;
-        });
+// Remove pagination handling since listAll returns everything
+const nonDefaultItems = result.items
+  .filter(item => !item.name.startsWith("default"))
+  .sort((a, b) => {
+    const aNum = parseInt(a.name.match(/\d+/)?.[0] || "0", 10);
+    const bNum = parseInt(b.name.match(/\d+/)?.[0] || "0", 10);
+    return aNum - bNum;
+  });
 
-      const batchUrls = await Promise.all(nonDefaultItems.map(item => getDownloadURL(item)));
+const batchUrls = await Promise.all(nonDefaultItems.map(item => getDownloadURL(item)));
 
-      setAdditionalAvatars(prev => [...prev, ...batchUrls]);
-      setDisplayedAvatars([...defaultAvatarUrls, ...batchUrls]);
-      setPaginationToken(result.nextPageToken || null);
-      setHasMoreAvatars(!!result.nextPageToken);
+setAdditionalAvatars(prev => [...prev, ...batchUrls]);
+setDisplayedAvatars([...defaultAvatarUrls, ...batchUrls]);
+setHasMoreAvatars(false); // no pagination with listAll
+
     } catch (error) {
       console.error("Error fetching additional avatars:", error);
     } finally {

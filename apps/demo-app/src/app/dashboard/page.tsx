@@ -10,6 +10,7 @@ import {
   ListItemText,
   ListItemIcon,
   Divider,
+  ListItemButton,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
@@ -34,20 +35,31 @@ const Dashboard = () => {
   });
   const [userId, setUserId] = useState(null);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const user = auth.currentUser;
-      if (user) {
-        setUserId(user.uid);
-        const docRef = doc(db, "tutors", user.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setFormData(docSnap.data());
-        }
+useEffect(() => {
+  const fetchUserData = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      setUserId(user.uid);
+      const docRef = doc(db, "tutors", user.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data() as Partial<{
+          username: string;
+          name: string;
+          profilePicture: string;
+        }>;
+
+        setFormData({
+          username: data.username ?? "",
+          name: data.name ?? "",
+          profilePicture: data.profilePicture ?? "",
+        });
       }
-    };
-    fetchUserData();
-  }, []);
+    }
+  };
+  fetchUserData();
+}, []);
+
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -102,35 +114,38 @@ const Dashboard = () => {
       
       <List sx={{ flexGrow: 1 }}>
         {sections.map(({ label, icon }) => (
-          <ListItem
-            button
-            key={label}
-            onClick={() => setActiveSection(label)}
-            sx={{ 
-              cursor: "pointer",
-              borderRadius: "8px",
-              mb: 1,
-              "&:hover": {
-                backgroundColor: "rgba(248, 221, 0, 0.08)"
-              }
-            }}
-          >
-            <ListItemIcon sx={{ 
-              color: activeSection === label ? "#F8DD00" : "#fff",
-              minWidth: "40px"
-            }}>
-              {icon}
-            </ListItemIcon>
-            <ListItemText
-              primary={label}
-              primaryTypographyProps={{
-                style: { 
-                  color: activeSection === label ? "#F8DD00" : "#fff",
-                  fontWeight: activeSection === label ? "500" : "400"
-                },
-              }}
-            />
-          </ListItem>
+          <ListItem key={label} disablePadding>
+  <ListItemButton
+    onClick={() => setActiveSection(label)}
+    sx={{
+      cursor: "pointer",
+      borderRadius: "8px",
+      mb: 1,
+      "&:hover": {
+        backgroundColor: "rgba(248, 221, 0, 0.08)"
+      }
+    }}
+  >
+    <ListItemIcon
+      sx={{
+        color: activeSection === label ? "#F8DD00" : "#fff",
+        minWidth: "40px"
+      }}
+    >
+      {icon}
+    </ListItemIcon>
+    <ListItemText
+      primary={label}
+      primaryTypographyProps={{
+        style: {
+          color: activeSection === label ? "#F8DD00" : "#fff",
+          fontWeight: activeSection === label ? "500" : "400"
+        }
+      }}
+    />
+  </ListItemButton>
+</ListItem>
+
         ))}
       </List>
     </Box>

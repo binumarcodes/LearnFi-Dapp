@@ -93,6 +93,12 @@ importers:
       '@burnt-labs/abstraxion':
         specifier: 1.0.0-alpha.65
         version: 1.0.0-alpha.65(@types/react@18.3.23)(react-dom@18.2.0)(react@18.2.0)
+      '@burnt-labs/constants':
+        specifier: 0.1.0-alpha.17
+        version: 0.1.0-alpha.17
+      '@burnt-labs/ui':
+        specifier: 0.1.0-alpha.17
+        version: 0.1.0-alpha.17(@types/react@18.3.23)(react-dom@18.2.0)(react@18.2.0)
       '@cosmjs/amino':
         specifier: 0.32.4
         version: 0.32.4
@@ -111,6 +117,9 @@ importers:
       framer-motion:
         specifier: 12.23.12
         version: 12.23.12(react-dom@18.2.0)(react@18.2.0)
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       next:
         specifier: 14.0.3
         version: 14.0.3(react-dom@18.2.0)(react@18.2.0)
@@ -133,6 +142,9 @@ importers:
       '@opennextjs/cloudflare':
         specifier: 0.3.10
         version: 0.3.10(wrangler@3.101.0)
+      '@types/lodash':
+        specifier: ^4.17.20
+        version: 4.17.20
       '@types/node':
         specifier: 20.11.19
         version: 20.11.19
@@ -6378,6 +6390,10 @@ packages:
 
   /@types/json5@0.0.29:
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
+    dev: true
+
+  /@types/lodash@4.17.20:
+    resolution: {integrity: sha512-H3MHACvFUEiujabxhaI/ImO6gUrd8oOurg7LQtS7mbwIXA/cUqWrvBsaeJ23aZEPk1TAYkurjfMbSELfoCXlGA==}
     dev: true
 
   /@types/long@4.0.2:

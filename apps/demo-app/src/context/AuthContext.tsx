@@ -1,41 +1,39 @@
-'use client';
-import { createContext, useContext, useEffect, useState } from 'react';
-import { useAbstraxionAccount } from '@burnt-labs/abstraxion';
+// context/AuthContext.tsx
+import React, { createContext, useContext, useState } from "react";
+import { signOut } from "firebase/auth";
+import { auth } from "../components/util/firebase"; // adjust if needed
 
-interface AuthContextType {
-  user: { bech32Address: string } | null;
-  loading: boolean;
+type AuthContextType = {
+  user: any;
   isGuest: boolean;
-}
+  logout: () => Promise<void>;  // ✅ add logout
+};
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  loading: true,
-  isGuest: false,
+  isGuest: true,
+  logout: async () => {},
 });
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { data: account, isConnected } = useAbstraxionAccount();
-  const [loading, setLoading] = useState(true);
-  const [isGuest, setIsGuest] = useState(false);
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<any>(null);
+  const [isGuest, setIsGuest] = useState(true);
 
-  useEffect(() => {
-    if (isConnected !== undefined) {
-      setLoading(false);
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      setIsGuest(true);
+    } catch (error) {
+      console.error("Logout failed:", error);
     }
-  }, [isConnected]);
-
-  const value = {
-    user: account ? { bech32Address: account.bech32Address } : null,
-    loading,
-    isGuest,
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, isGuest, logout }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
 export const useAuth = () => useContext(AuthContext);
