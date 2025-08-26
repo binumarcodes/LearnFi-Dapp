@@ -4,9 +4,9 @@
   "private": true,
   "packageManager": "pnpm@8.9.0",
   "engines": {
-    "node": ">=18 <=20",
-    "pnpm": "8.x"
-  },
+  "node": "18.x",
+  "pnpm": "8.x"
+},
   "scripts": {
     "dev": "next dev --port 3001",
     "build": "next build --no-lint",
