@@ -2,10 +2,8 @@
   "name": "@burnt-labs/xion.js",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@8.15.4",
   "engines": {
-    "node": "18.x",
-    "pnpm": "8.x"
+    "node": "18.x"
   },
   "scripts": {
     "build": "turbo build",
@@ -45,11 +43,5 @@
     "turbo": "^2.0.11",
     "viem": "^2.25.0",
     "wagmi": "^2.14.16"
-  },
-  "pnpm": {
-    "overrides": {
-      "@types/react": "^18.2.47",
-      "@types/react-dom": "^18.2.18"
-    }
   }
 }
