@@ -1,4 +1,4 @@
 {
-  "installCommand": "pnpm install",
+  "installCommand": "corepack enable && corepack prepare pnpm@8.15.4 --activate && pnpm install",
   "buildCommand": "pnpm --filter demo-app run build"
 }
